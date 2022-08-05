@@ -198,6 +198,19 @@ class Push_Api_GlobalController extends Api_Controller_Default
                             __("Please select at least one application.")
                         );
                     }
+                    
+                    if (!empty($params['cover'])) {
+                        $tmpPath = sprintf("%s/%s", Core_Model_Directory::getTmpDirectory(), uniqid());
+                        $imagePath = base64imageToFile(
+                        $params['cover'],
+                        Core_Model_Directory::getBasePathTo($tmpPath));
+
+                        $picture = Siberian_Feature::moveAsset($imagePath);
+
+                        $params['cover'] = $picture;
+                    } else {
+                        $params['cover'] = null;
+                    }
 
                     $push_global = new Push_Model_Message_Global();
                     $result = $push_global->createInstance($params);
