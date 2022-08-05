@@ -130,6 +130,8 @@ class Push_Api_GlobalController extends Api_Controller_Default
                         $params['type_id'] = ($params['type_id']) ? $params['type_id'] : 1;
                         $params["send_to_all"] = $params["topic_receiver"] ? 0 : 1;
                         $params['send_to_specific_customer'] = 1;
+                        
+                        $params['cover'] = (!empty($params['cover'])) ? $this->makeCover($params['cover']):null;
 
                         // Filter out unwanted params
                         $allowed_params = [
@@ -139,7 +141,8 @@ class Push_Api_GlobalController extends Api_Controller_Default
                             'action_value',
                             'type_id',
                             'send_to_all',
-                            'send_to_specific_customer'
+                            'send_to_specific_customer',
+                            'cover'
                         ];
 
                         $data =[]; 
@@ -198,20 +201,9 @@ class Push_Api_GlobalController extends Api_Controller_Default
                             __("Please select at least one application.")
                         );
                     }
+
+                    $params['cover'] = (!empty($params['cover'])) ? $this->makeCover($params['cover']):null;
                     
-                    if (!empty($params['cover'])) {
-                        $tmpPath = sprintf("%s/%s", Core_Model_Directory::getTmpDirectory(), uniqid());
-                        $imagePath = base64imageToFile(
-                        $params['cover'],
-                        Core_Model_Directory::getBasePathTo($tmpPath));
-
-                        $picture = Siberian_Feature::moveAsset($imagePath);
-
-                        $params['cover'] = $picture;
-                    } else {
-                        $params['cover'] = null;
-                    }
-
                     $push_global = new Push_Model_Message_Global();
                     $result = $push_global->createInstance($params);
 
@@ -243,5 +235,14 @@ class Push_Api_GlobalController extends Api_Controller_Default
             ];
         }
         $this->_sendJson($data);
+    }
+
+    protected function makeCover($img) {
+        $tmpPath = sprintf("%s/%s", Core_Model_Directory::getTmpDirectory(), uniqid());
+        $imagePath = base64imageToFile(
+            $img,
+            Core_Model_Directory::getBasePathTo($tmpPath)
+        );
+        return Siberian_Feature::moveAsset($imagePath);
     }
 }
